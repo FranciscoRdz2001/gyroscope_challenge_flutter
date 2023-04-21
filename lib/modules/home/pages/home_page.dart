@@ -18,15 +18,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const accent = Color(0xff3633c4);
-  static const cardColor = Color(0xff793ecf);
   static const secondary = Color(0xff9248ce);
   static const bubblesColors = [
     Color(0xff4419c5),
     Color(0xff5121c3),
     Color(0xff682cd2),
-    accent,
-    cardColor,
+    Color.fromARGB(255, 43, 40, 186),
+    Color.fromARGB(255, 97, 45, 174),
     secondary,
   ];
 
@@ -35,15 +33,13 @@ class _HomePageState extends State<HomePage> {
 
   late final Stream<SensorEvent> stream;
   late final StreamSubscription<SensorEvent> suscription;
-  final kalmanX = SimpleKalman(q: 0.01, errorMeasure: 0.1, errorEstimate: 0.1);
-  final kalmanY = SimpleKalman(q: 0.01, errorMeasure: 0.1, errorEstimate: 0.1);
-
-  final List<List<double>> gyroData = [];
-  final int windowSize = 5;
+  final kalmanX =
+      SimpleKalman(q: 0.01, errorMeasure: 0.35, errorEstimate: 0.35);
+  final kalmanY =
+      SimpleKalman(q: 0.01, errorMeasure: 0.35, errorEstimate: 0.35);
 
   double x = 0;
   double y = 0;
-  double z = 0;
 
   @override
   void initState() {
@@ -60,12 +56,12 @@ class _HomePageState extends State<HomePage> {
   void initStream() async {
     stream = await SensorManager().sensorUpdates(
       sensorId: 1,
-      interval: const Duration(milliseconds: 0),
+      interval: const Duration(milliseconds: 50),
     );
     suscription = stream.listen((event) {
       setState(() {
-        final clampledX = clampDouble(event.data[0], -0.45, 0.45);
-        final clampledY = clampDouble(event.data[1], -0.45, 0.45);
+        final clampledX = clampDouble(event.data[0], -0.25, 0.25);
+        final clampledY = clampDouble(event.data[1], -0.25, 0.25);
         x = kalmanX.filtered(clampledX);
         y = kalmanY.filtered(clampledY);
       });
@@ -79,19 +75,20 @@ class _HomePageState extends State<HomePage> {
     final resp = ResponsiveUtil.of(context);
 
     return Scaffold(
-      body: Container(
-        // duration: const Duration(milliseconds: 500),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: const [
-              accent,
-              cardColor,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [x, y],
-          ),
-        ),
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        color: x.abs() <= 0.1 ? accent : cardColor,
+        // decoration: BoxDecoration(
+        // gradient: LinearGradient(
+        //   colors: const [
+        //     accent,
+        //     cardColor,
+        //   ],
+        //   begin: Alignment.centerRight,
+        //   end: Alignment.centerLeft,
+        //   // stops: [x, y],
+        // ),
+        // ),
         child: Center(
           child: Stack(
             alignment: Alignment.center,
@@ -103,9 +100,17 @@ class _HomePageState extends State<HomePage> {
                 x: y,
                 y: x,
               ),
-              SizedBox(
-                height: resp.height,
-                width: resp.width,
+              ClipRRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 10,
+                    sigmaY: 10,
+                  ),
+                  child: SizedBox(
+                    height: resp.height,
+                    width: resp.width,
+                  ),
+                ),
               ),
               CardWidget(color: cardColor, x: x, y: y),
             ],

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class BubblesPainter extends CustomPainter {
@@ -36,7 +34,7 @@ class BubblesPainter extends CustomPainter {
       final y = positions[i + 1] * (size.height - 2 * radius) + radius;
 
       canvas.drawCircle(
-        Offset((x + spacing) * directions[i], y + ySpacing),
+        Offset((x + spacing) * directions[i], (y + ySpacing) * directions[i]),
         radius,
         paint,
       );

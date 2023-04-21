@@ -26,8 +26,8 @@ class BubblesBackgroundWidget extends StatelessWidget {
         colors: colors,
         positions: positions,
         radius: resp.wp(50),
-        spacing: 200 * x,
-        ySpacing: 200 * y,
+        spacing: 50 * x,
+        ySpacing: 100 * y,
         directions: directions,
       ),
     );
